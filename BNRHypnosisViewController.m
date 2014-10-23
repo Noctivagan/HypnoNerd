@@ -12,6 +12,7 @@
 @interface
 
 BNRHypnosisViewController () <UITextFieldDelegate>
+@property (nonatomic, weak) UITextField *textField;
 
 @end
 @implementation BNRHypnosisViewController
@@ -36,7 +37,7 @@ BNRHypnosisViewController () <UITextFieldDelegate>
     CGRect frame = [UIScreen mainScreen].bounds;
     BNRHypnosisView *backgroundView = [[BNRHypnosisView alloc] initWithFrame:frame];
     
-    CGRect textFieldRect = CGRectMake(40, 70, 240, 30);
+    CGRect textFieldRect = CGRectMake(40, -30, 240, 30);
     UITextField *textField = [[ UITextField alloc] initWithFrame:textFieldRect];
     
     // Setting the border style on the text field will allow us to see ti more easily
@@ -47,6 +48,8 @@ BNRHypnosisViewController () <UITextFieldDelegate>
     textField.delegate = self;
     
     [backgroundView addSubview:textField];
+    self.textField = textField;
+    
     // Set it as *the* view of this view controller
     self.view = backgroundView;
     
@@ -58,6 +61,14 @@ BNRHypnosisViewController () <UITextFieldDelegate>
     NSLog(@"BNRHypnosisViewController loaded its view.");
 }
 
+- (void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
+    [UIView animateWithDuration:2.0 delay:0.0 usingSpringWithDamping:0.25 initialSpringVelocity:0.0 options:0 animations:^{
+        CGRect frame = CGRectMake(40, 70, 240, 30);
+        self.textField.frame = frame;
+    }completion:NULL];
+}
 - (BOOL) textFieldShouldReturn: (UITextField *)textField
 {
     NSLog(@"%@", textField.text);
@@ -97,6 +108,24 @@ BNRHypnosisViewController () <UITextFieldDelegate>
         // Add the frame to the hierarchy
         [self.view addSubview:messageLabel];
         
+        // Set the label's initial alpha
+        messageLabel.alpha = 0.0;
+        
+        // Animate the alpha to 1.0
+        [UIView animateWithDuration:1.0 delay:0.0 options:UIViewAnimationOptionCurveEaseIn animations:^{messageLabel.alpha = 1.0;} completion:^(BOOL ffinished){
+            NSLog(@"First animation finished");
+        }];
+        
+        [UIView animateKeyframesWithDuration:1.0 delay:0.0 options:0 animations:^{[UIView addKeyframeWithRelativeStartTime:0 relativeDuration:0.8 animations:^{messageLabel.center = self.view.center;}];
+            [UIView addKeyframeWithRelativeStartTime:0.8 relativeDuration:0.2 animations:^{
+                int x = arc4random() % width;
+                int y = arc4random() % height;
+                messageLabel.center = CGPointMake(x,y);
+            }];
+        } completion:^(BOOL sfinished){
+            NSLog(@"Second animation finished");
+        }];
+         
         UIInterpolatingMotionEffect *motionEffect = [[UIInterpolatingMotionEffect alloc] initWithKeyPath:@"center.x" type:UIInterpolatingMotionEffectTypeTiltAlongHorizontalAxis];
         motionEffect.minimumRelativeValue = @-25;
         motionEffect.maximumRelativeValue = @25;
